@@ -15,7 +15,7 @@ Config.BuffItems = {
 }
 
 Config.RidablePeds = {
-    `a_c_horse`,
+  
     `a_c_cow`,
     `a_c_boar`,
 }
@@ -46,3 +46,4 @@ Config.Locale = {
     invincibility_worn_off = 'The apple\'s magic has faded.',
 
 }
+
