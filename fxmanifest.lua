@@ -17,10 +17,5 @@ server_scripts {
     'server/main.lua'
 }
 
-dependencies {
-    'qb-core',
-    'ox_lib',
-    'ox_inventory',
-    'ox_target'
-}
+
 
