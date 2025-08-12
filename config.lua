@@ -3,11 +3,11 @@ Config = {}
 Config.SaddleItem = 'saddle'
 Config.SaddleTime = 5000
 
--- NEW: Animal speed settings
+
 Config.AnimalBaseSpeed = 2.0 -- Base walking speed
 Config.AnimalRunSpeed = 5.0  -- Base running/sprinting speed
 
--- NEW: Buff item settings
+
 Config.BuffItems = {
     SpeedBoostDuration = 60000, -- in milliseconds (60 seconds)
     InvincibilityDuration = 60000, -- in milliseconds (60 seconds)
@@ -44,4 +44,5 @@ Config.Locale = {
     speed_buff_worn_off = 'The stimulant has worn off.',
     invincibility_applied = 'Your animal\'s hide feels like iron!',
     invincibility_worn_off = 'The apple\'s magic has faded.',
+
 }
