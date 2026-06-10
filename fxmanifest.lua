@@ -1,21 +1,28 @@
 fx_version 'cerulean'
-lua54 'yes'
 game 'gta5'
-author 'Lucifer'
-description 'Horse and Cow Riding script'
+lua54 'yes'
 
+name 'lf-animalride'
+author 'Lucifer'
+description 'Rideable animal companions for QBox, QBCore and ESX (tame, summon, ride, buff)'
+version '2.0.0'
+repository 'https://github.com/luci53/lf-animalride'
 
 shared_scripts {
-    'config.lua'
+    '@ox_lib/init.lua',
+    'config.lua',
 }
 
 client_scripts {
-    'client/main.lua'
+    'client/main.lua',
 }
 
 server_scripts {
-    'server/main.lua'
+    'server/bridge.lua',
+    'server/main.lua',
 }
 
-
-
+dependencies {
+    'ox_lib',
+    'ox_target',
+}

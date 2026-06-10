@@ -1,97 +1,124 @@
-# Advanced Animal Riding for QBCore
+# lf-animalride — Rideable Animal Companions
 
-A comprehensive animal companion script for QBCore servers, built with modern tools like `ox_target` and `ox_lib`. This script allows players to acquire, ride, and interact with various ground-based animals, adding a new layer of immersion to your server.
+![version](https://img.shields.io/github/v/release/luci53/lf-animalride?sort=semver)
+![license](https://img.shields.io/github/license/luci53/lf-animalride)
+![frameworks](https://img.shields.io/badge/framework-QBox%20%7C%20QBCore%20%7C%20ESX-blue)
 
-This script uses a direct-attachment method, where the player sits on the animal's back and controls its movement through a custom, non-vehicle control scheme for a realistic feel.
+Tame or summon rideable animals, ride them with a custom control scheme, buff
+them, and have them follow you around. Framework-agnostic (QBox / QBCore / ESX)
+with server-authoritative item handling.
+
+> **Upgrading from v1?** v2 is a rewrite with a new config layout and folder
+> structure — see the [CHANGELOG](CHANGELOG.md). It also closes a critical item
+> duplication exploit, so updating is strongly recommended.
 
 ## Features
 
-* **Rideable Ground Animals:** Natively supports riding horses, cows, and boars. Easily extendable to other peds.
-* **Modern Targeting:** Uses `ox_target` for all interactions, providing a clean and intuitive user experience.
-* **Two Acquisition Methods:**
-    * **Taming:** Find an animal in the wild and use a `saddle` item to tame it.
-    * **Spawning:** Use special items like a `cow_whistle` to spawn a personal animal companion instantly.
-* **Custom Controls:**
-    * Use standard movement keys (`W`, `A`, S`, `D`) to guide the animal.
-    * Hold **Shift** to make it run faster.
-    * Press the **F** key to dismount without releasing the animal.
-* **Follow Companion:** When you dismount, your active animal will follow you.
-* **Consumable Buffs:**
-    * **Speed Boost:** Use an `animal_stimulant` to make your animal run significantly faster for a short period.
-    * **Invincibility:** Use an `ironhide_apple` to make your animal temporarily invincible to all damage.
-* **Highly Configurable:** Easily change animal speeds, buff durations, multipliers, and add new animals via the `config.lua` file.
+- **Multi-framework** — QBox (`qbx_core`), QBCore and ESX, auto-detected, with an
+  inventory bridge for `ox_inventory`, qb and esx inventories.
+- **Two ways to get an animal** — tame a wild one with a `saddle`, or summon a
+  personal companion with an item (e.g. `cow_whistle`).
+- **Custom riding** — `WASD` to steer, hold **Shift** to sprint, **F** to
+  dismount. Your animal follows you when you're on foot.
+- **Stamina** — sprinting drains stamina and regenerates while resting, with an
+  optional on-screen bar.
+- **Call companion** — a keybind (default **G**) recalls your animal, teleporting
+  it to you if it's far away.
+- **Buff items** — a speed stimulant and an invincibility apple.
+- **Server-authoritative** — every item add/remove is validated server-side and
+  bounded by ownership state. No client-trusted economy.
 
 ## Dependencies
 
-You must have the following resources installed and started **before** `lf-animalride`.
-
-* [qb-core](https://github.com/qbcore-framework/qb-core)
-* [ox_lib](https://github.com/overextended/ox_lib)
-* [ox_inventory](https://github.com/overextended/ox_inventory)
-* [ox_target](https://github.com/overextended/ox_target)
+| Resource | Required | Notes |
+| --- | --- | --- |
+| [ox_lib](https://github.com/communityox/ox_lib) | ✅ | Notifications, progress, callbacks |
+| [ox_target](https://github.com/communityox/ox_target) | ✅ | Interacting with animals |
+| A framework | ✅ | [qbx_core](https://github.com/Qbox-project/qbx_core) **or** [qb-core](https://github.com/qbcore-framework/qb-core) **or** [es_extended](https://github.com/esx-framework/esx_core) |
+| [ox_inventory](https://github.com/communityox/ox_inventory) | Recommended | Used automatically when present (works with qb/esx inventories too) |
 
 ## Installation
 
+1. Place `lf-animalride` in your `resources` folder.
+2. Add the items below to your inventory, and the item images to
+   `ox_inventory/web/images/` (the five PNGs ship in `item-images/`).
+3. Add `ensure lf-animalride` to your `server.cfg`, **after** its dependencies.
+4. Restart your server.
 
+### Items
 
-1.  **Add Item Definitions to QBCore:**
-    * Open `qb-core/shared/items.lua` and add the following code to your items list:
-    ```lua
-    ['saddle'] = {
-        ['name'] = 'saddle', ['label'] = 'Saddle', ['weight'] = 3000, ['type'] = 'item',
-        ['image'] = 'saddle.png', ['unique'] = false, ['usable'] = false, ['shouldClose'] = false,
-        ['description'] = 'A leather saddle for riding animals.'
-    },
-    ['cow_whistle'] = {
-        ['name'] = 'cow_whistle', ['label'] = 'Cow Whistle', ['weight'] = 100, ['type'] = 'item',
-        ['image'] = 'cow_whistle.png', ['unique'] = false, ['usable'] = true, ['shouldClose'] = true,
-        ['description'] = 'A special whistle. I wonder what will answer the call?'
-    },
-    ['boar_caller'] = {
-        ['name'] = 'boar_caller', ['label'] = 'Boar Caller', ['weight'] = 250, ['type'] = 'item',
-        ['image'] = 'boar_caller.png', ['unique'] = false, ['usable'] = true, ['shouldClose'] = true,
-        ['description'] = 'A horn that produces a deep grunt. Might attract something wild.'
-    },
-    ['animal_stimulant'] = {
-        ['name'] = 'animal_stimulant', ['label'] = 'Animal Stimulant', ['weight'] = 200, ['type'] = 'item',
-        ['image'] = 'animal_stimulant.png', ['unique'] = false, ['usable'] = true, ['shouldClose'] = true,
-        ['description'] = 'A potent concoction that will make your animal companion run much faster for a short time.'
-    },
-    ['ironhide_apple'] = {
-        ['name'] = 'ironhide_apple', ['label'] = 'Ironhide Apple', ['weight'] = 500, ['type'] = 'item',
-        ['image'] = 'ironhide_apple.png', ['unique'] = false, ['usable'] = true, ['shouldClose'] = true,
-        ['description'] = 'An enchanted apple that makes your animal companion temporarily invincible.'
-    },
-    ```
+`items.lua` in this repo contains ready-to-paste definitions for both
+**ox_inventory** (`data/items.lua`) and **QBCore** (`qb-core/shared/items.lua`).
+The five items are: `saddle`, `cow_whistle`, `boar_caller`, `animal_stimulant`,
+`ironhide_apple`.
 
-2.  **Add Item Definitions to ox_inventory:**
-    * Open `ox_inventory/data/items.lua` and add the following code:
-    ```lua
-    ['saddle'] = { label = 'Saddle', weight = 3000, stack = true, close = false },
-    ['cow_whistle'] = { label = 'Cow Whistle', weight = 100, stack = true, close = true },
-    ['boar_caller'] = { label = 'Boar Caller', weight = 250, stack = true, close = true },
-    ['animal_stimulant'] = { label = 'Animal Stimulant', weight = 200, stack = true, close = true },
-    ['ironhide_apple'] = { label = 'Ironhide Apple', weight = 500, stack = true, close = true },
-    ```
+> The summon/buff items use `consume = 1` in ox_inventory so the item is removed
+> on use and the server reacts to the trusted `usedItem` event.
 
-3.  **Add Item Images:**
-    * Make sure you have all five required images (`saddle.png`, `cow_whistle.png`, `boar_caller.png`, `animal_stimulant.png`, `ironhide_apple.png`).
-    * Place all of them inside the `ox_inventory/web/images/` folder.
+## How to use
 
-4.  **Ensure the Resource:**
-    * Add `ensure lf-animalride` to your `server.cfg` or `resources.cfg`.
-    * **Important:** This line must be placed *after* the dependencies.
+| Action | How |
+| --- | --- |
+| **Tame** a wild animal | Target it and pick **Saddle Animal** (consumes a `saddle`) |
+| **Summon** a companion | Use a summon item (e.g. `cow_whistle`) from your inventory |
+| **Mount** | Target your animal → **Mount Animal** |
+| **Ride** | `WASD` to steer, hold **Shift** to sprint |
+| **Dismount** | Press **F** (the animal then follows you) |
+| **Call** your animal | Press **G** (rebindable) or `/callanimal` |
+| **Release** | Target your animal → **Release Animal** (saddle is returned if you tamed it) |
+| **Buffs** | Use `animal_stimulant` (speed) or `ironhide_apple` (invincibility) while you have an animal |
 
-5.  **Restart Server:**
-    * Restart your FiveM server for all changes to take effect.
+## Configuration
 
-## How to Use
+All settings live in [`config.lua`](config.lua), fully commented. Highlights:
 
-1.  **Get an Animal:** Tame a wild animal with a `saddle` or use a spawn item (e.g., `cow_whistle`) from your inventory.
-2.  **Riding:**
-    * Use your target key on your animal to **Mount**.
-    * Use `W,A,S,D` to control the animal and hold **Shift** to run.
-    * Press **F** to dismount. The animal will then follow you.
-3.  **Using Buffs:** While you have an active animal, "Use" the `animal_stimulant` or `ironhide_apple` from your inventory to apply the effect.
-4.  **Releasing:** To permanently dismiss your animal, target it and select **Release Animal**.
+```lua
+Config.Framework = 'auto'   -- 'auto' | 'qbx' | 'qb' | 'esx'
+Config.Inventory = 'auto'   -- 'auto' | 'ox' | 'qb' | 'esx'
 
+Config.Movement = { baseSpeed = 2.0, runSpeed = 5.0, turnSpeed = 2.0 }
+Config.Stamina  = { enabled = true, max = 100.0, drain = 18.0, regen = 12.0, showBar = true }
+Config.Call     = { enabled = true, command = 'callanimal', key = 'G', teleportDistance = 60.0 }
+```
+
+### Animals
+
+Each animal defines its model, label, optional summon item and mount seating:
+
+```lua
+Config.Animals = {
+    cow  = { model = `a_c_cow`,  label = 'Cow',  spawnItem = 'cow_whistle' },
+    boar = { model = `a_c_boar`, label = 'Boar', spawnItem = 'boar_caller' },
+    -- horse = { model = `a_c_horse`, label = 'Horse', spawnItem = 'horse_whistle' },
+}
+```
+
+> Base GTA V has no horse ped. If you stream an addon horse model, add it here.
+> Models with no `spawnItem` can still be tamed with a saddle.
+
+## Security
+
+Network events are untrusted, so the server owns the item economy:
+
+- The client can no longer add or remove items. It only **requests** actions.
+- Taming consumes the saddle through an `lib.callback`, validated server-side.
+- Summon/buff use is driven by the inventory's trusted use event; refunds for an
+  invalid use (no animal, already buffed, spawn failed) are bounded per use, so a
+  player can never get back more than they spent.
+- Animal ownership is tracked per player and cleared on release, death and
+  disconnect.
+
+## Releases
+
+Pushing a version tag runs the [release workflow](.github/workflows/release.yml),
+which builds a versioned zip and publishes a GitHub release with auto-generated
+notes:
+
+```bash
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+## License
+
+[MIT](LICENSE) © Lucifer (luci53)
